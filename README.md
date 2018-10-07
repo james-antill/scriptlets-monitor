@@ -13,4 +13,4 @@ You'll then get:
  * /mnt/pkgs-f29.nevra - csv file of package nevras and scriptlet data.
  * /mnt/pkgs-f29.d/* - package scriptlets as /NEVRA.TYPE
 
-You can then diff the .name files betweek runs/versions to see what is changing.
+You can then diff the .name files between runs/versions to see what is changing.
