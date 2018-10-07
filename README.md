@@ -1,4 +1,5 @@
-= Scriplets monitor
+Scriplets monitor
+=================
 
 Produce data about the scriptlets within the installed rpms for the system.
 
