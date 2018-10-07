@@ -227,19 +227,23 @@ func main() {
 		op := stats["/"]
 
 		csvScriptlet(csv, p.name, p.nevra,
-			"PREIN", p.preinc, p.preind, p.preinh)
-		csvScriptlet(csv, p.name, p.nevra,
-			"PREUN", p.preunc, p.preund, p.preunh)
-		csvScriptlet(csv, p.name, p.nevra,
 			"POSTIN", p.postinc, p.postind, p.postinh)
-		csvScriptlet(csv, p.name, p.nevra,
-			"POSTUN", p.postunc, p.postund, p.postunh)
 		if transactionFlag {
-			csvScriptlet(csv, p.name, p.nevra,
-				"PRETRANS", p.pretransc, p.pretransd, p.pretransh)
 			csvScriptlet(csv, p.name, p.nevra,
 				"POSTTRANS", p.posttransc, p.posttransd, p.posttransh)
 		}
+		csvScriptlet(csv, p.name, p.nevra,
+			"POSTUN", p.postunc, p.postund, p.postunh)
+		csvScriptlet(csv, p.name, p.nevra,
+			"PREIN", p.preinc, p.preind, p.preinh)
+		if transactionFlag {
+			csvScriptlet(csv, p.name, p.nevra,
+				"PRETRANS", p.pretransc, p.pretransd, p.pretransh)
+		}
+		csvScriptlet(csv, p.name, p.nevra,
+			"PREUN", p.preunc, p.preund, p.preunh)
+
+		// No added scriptlets, so good pkg.
 		if op == stats["/"] {
 			stats[" "]++
 		}
