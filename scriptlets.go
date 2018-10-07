@@ -14,6 +14,8 @@ import (
 	//	"github.com/james-antill/repos"
 )
 
+var transactionFlag bool
+
 func cmd2string(p string, s ...string) string {
 	cmd := exec.Command(p, s...)
 	var out bytes.Buffer
@@ -129,6 +131,18 @@ type pkg struct {
 	postunc string
 	postund string
 	postunh string
+
+	pretransc string
+	pretransd string
+	pretransh string
+
+	posttransc string
+	posttransd string
+	posttransh string
+}
+
+func init() {
+	flag.BoolVar(&transactionFlag, "transaction", false, "Dump transaction scriptlets too")
 }
 
 func main() {
@@ -183,6 +197,11 @@ func main() {
 			p.preunc, p.preund, p.preunh = scriptlet(p.nevra, "preun")
 			p.postinc, p.postind, p.postinh = scriptlet(p.nevra, "postin")
 			p.postunc, p.postund, p.postunh = scriptlet(p.nevra, "postun")
+
+			if transactionFlag {
+				p.pretransc, p.pretransd, p.pretransh = scriptlet(p.nevra, "pretrans")
+				p.posttransc, p.posttransd, p.posttransh = scriptlet(p.nevra, "posttrans")
+			}
 		}()
 	}
 	wg.Wait()
@@ -207,10 +226,20 @@ func main() {
 		stats["."]++
 		op := stats["/"]
 
-		csvScriptlet(csv, p.name, p.nevra, "PREIN", p.preinc, p.preind, p.preinh)
-		csvScriptlet(csv, p.name, p.nevra, "PREUN", p.preunc, p.preund, p.preunh)
-		csvScriptlet(csv, p.name, p.nevra, "POSTIN", p.postinc, p.postind, p.postinh)
-		csvScriptlet(csv, p.name, p.nevra, "POSTUN", p.postunc, p.postund, p.postunh)
+		csvScriptlet(csv, p.name, p.nevra,
+			"PREIN", p.preinc, p.preind, p.preinh)
+		csvScriptlet(csv, p.name, p.nevra,
+			"PREUN", p.preunc, p.preund, p.preunh)
+		csvScriptlet(csv, p.name, p.nevra,
+			"POSTIN", p.postinc, p.postind, p.postinh)
+		csvScriptlet(csv, p.name, p.nevra,
+			"POSTUN", p.postunc, p.postund, p.postunh)
+		if transactionFlag {
+			csvScriptlet(csv, p.name, p.nevra,
+				"PRETRANS", p.pretransc, p.pretransd, p.pretransh)
+			csvScriptlet(csv, p.name, p.nevra,
+				"POSTTRANS", p.posttransc, p.posttransd, p.posttransh)
+		}
 		if op == stats["/"] {
 			stats[" "]++
 		}
@@ -220,6 +249,10 @@ func main() {
 		printScriptlet("PREUN", p.preunc, p.preund, p.preunh)
 		printScriptlet("POSTIN", p.postinc, p.postind, p.postinh)
 		printScriptlet("POSTUN", p.postunc, p.postund, p.postunh)
+		if transactionFlag {
+			printScriptlet("PRETRANS", p.pretransc, p.pretransd, p.pretransh)
+			printScriptlet("POSTTRANS", p.posttransc, p.posttransd, p.posttransh)
+		}
 	}
 
 	fmt.Printf("STATS:\n"+
