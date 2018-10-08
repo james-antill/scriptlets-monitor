@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	roc "github.com/james-antill/rename-on-close"
 	//	"github.com/james-antill/repos"
 )
 
@@ -79,7 +81,7 @@ func csvScriptlet(csv *CSV, name, nevra string, T, c, d, h string) {
 	csv.stats[c]++
 
 	ofname := csv.dir + "/" + nevra + "." + T
-	of, err := os.Create(ofname)
+	of, err := roc.Create(ofname)
 	if err != nil {
 		panic(fmt.Errorf("Create(%s): %s", ofname, err))
 	}
@@ -95,6 +97,11 @@ func csvScriptlet(csv *CSV, name, nevra string, T, c, d, h string) {
 	}
 	if _, err := io.WriteString(of, d); err != nil {
 		panic(fmt.Errorf("Write(%s): %s", ofname, err))
+	}
+	if d, _ := of.IsDifferent(); d {
+		if err := of.CloseRename(); err != nil {
+			panic(fmt.Errorf("Close(%s): %s", ofname, err))
+		}
 	}
 
 	csvline := fmt.Sprintf("%s,%s,%s,%d,%s\n", nevra, T, c, len(d), h)
@@ -209,12 +216,12 @@ func main() {
 	if err := os.MkdirAll(ofname+".d", 0755); err != nil {
 		panic(fmt.Errorf("Mkdir(%s.d): %s", ofname, err))
 	}
-	ofV, err := os.Create(ofname + ".nevra")
+	ofV, err := roc.Create(ofname + ".nevra")
 	if err != nil {
 		panic(fmt.Errorf("Create(%s): %s", ofname+".nevra", err))
 	}
 	defer ofV.Close() // Ehh, errs
-	ofU, err := os.Create(ofname + ".name")
+	ofU, err := roc.Create(ofname + ".name")
 	if err != nil {
 		panic(fmt.Errorf("Create(%s): %s", ofname+".name", err))
 	}
@@ -256,6 +263,19 @@ func main() {
 		if transactionFlag {
 			printScriptlet("PRETRANS", p.pretransc, p.pretransd, p.pretransh)
 			printScriptlet("POSTTRANS", p.posttransc, p.posttransd, p.posttransh)
+		}
+	}
+
+	if d, _ := ofU.IsDifferent(); d {
+		name := ofU.Name()
+		if err := ofU.CloseRename(); err != nil {
+			panic(fmt.Errorf("Close(%s): %s", name, err))
+		}
+	}
+	if d, _ := ofV.IsDifferent(); d {
+		name := ofV.Name()
+		if err := ofV.CloseRename(); err != nil {
+			panic(fmt.Errorf("Close(%s): %s", name, err))
 		}
 	}
 
